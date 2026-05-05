@@ -7,7 +7,7 @@ import br.com.venhaserjava.model.SecurityEvent; // Import correto do seu model
 @ApplicationScoped
 public class SecurityEventConsumer {
 
-    @Incoming("security-audit")
+    @Incoming("security-audit-in")
     public void consume(SecurityEvent event) {
         System.out.println(">>> Evento Recebido: " + event.getUser());
         

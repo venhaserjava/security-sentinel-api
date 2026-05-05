@@ -11,7 +11,7 @@ import org.eclipse.microprofile.reactive.messaging.Emitter;
 public class SecurityEventProducer {
 
     @Inject
-    @Channel("security-audit") // Nome do canal interno que mapearemos para o tópico Kafka
+    @Channel("security-audit-out") // Nome do canal interno que mapearemos para o tópico Kafka
     Emitter<SecurityEvent> eventEmitter;
 
     public void sendEvent(SecurityEvent event) {

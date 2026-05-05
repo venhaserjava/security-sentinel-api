@@ -10,7 +10,7 @@ public class SecurityEvent {
     private String ipAddress;
     private String details;
     private String timestamp;
-
+    
     public SecurityEvent() {}
 
     public SecurityEvent(String type, String user, String ipAddress, String details) {
@@ -21,6 +21,7 @@ public class SecurityEvent {
         this.timestamp = LocalDateTime.now().toString();
     }
 
+    
     // Getters e Setters
     public String getUser() { return user; }
     public void setUser(String user) { this.user = user; }
