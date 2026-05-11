@@ -19,6 +19,7 @@ public class SecurityEvent {
         this.ipAddress = ipAddress;
         this.details = details;
         this.timestamp = LocalDateTime.now().toString();
+        System.out.println("\n>>> [SISTEMA] SecurityEvent instanciado...\n");
     }
 
     

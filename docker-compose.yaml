@@ -1,45 +1,65 @@
 #version: '3.8'
 services:
-  # O Coração: Kafka em modo KRaft (mais leve e moderno)
   kafka:
       image: confluentinc/cp-kafka:7.5.0
       container_name: security-kafka
       ports:
         - "9092:9092"
+        - "29093:29093"
       environment:
         KAFKA_NODE_ID: 1
-        KAFKA_PROCESS_ROLES: 'broker,controller'
-        KAFKA_CONTROLLER_QUORUM_VOTERS: '1@localhost:29093'
-        KAFKA_LISTENERS: 'PLAINTEXT://0.0.0.0:29092,CONTROLLER://0.0.0.0:29093,EXTERNAL://0.0.0.0:9092'
-        KAFKA_ADVERTISED_LISTENERS: 'PLAINTEXT://kafka:29092,EXTERNAL://localhost:9092'
-        KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: 'CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT,EXTERNAL:PLAINTEXT'
+        KAFKA_PROCESS_ROLES: 'broker,controller'        
+        KAFKA_CONTROLLER_QUORUM_VOTERS: '1@kafka:29093'
+        KAFKA_LISTENERS: 'PLAINTEXT://0.0.0.0:9092,PLAINTEXT_INTERNAL://0.0.0.0:29092,CONTROLLER://0.0.0.0:29093'                
+        KAFKA_ADVERTISED_LISTENERS: 'PLAINTEXT://kafka:9092,PLAINTEXT_INTERNAL://kafka:29092'
+        KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: 'CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT,PLAINTEXT_INTERNAL:PLAINTEXT'
         KAFKA_CONTROLLER_LISTENER_NAMES: 'CONTROLLER'
         KAFKA_INTER_BROKER_LISTENER_NAME: 'PLAINTEXT'
-        CLUSTER_ID: 'MkU3ODA4NGU3N2I0M2VjYQ=='
+        KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+        KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0
+        KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
+        KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
+        CLUSTER_ID: '4L69H9CQZ6m6S6j6Y6Q6Aw'
+      volumes:
+      - kafka_data:/var/lib/kafka/data  
       healthcheck:
-        test: ["CMD", "nc", "-z", "localhost", "9092"] # Testa apenas se a porta está aberta
-        interval: 10s
+        test: ["CMD-SHELL", "kafka-topics --bootstrap-server localhost:9092 --list || exit 1"]
+        interval: 10s # Aumentamos um pouco para dar tempo de formatar
         timeout: 5s
         retries: 5
-        start_period: 30s # IMPORTANTE: Dá 30 segundos de "folga" antes de começar a cobrar saúde
-  # A Visão: Kafdrop (Interface para o seu canal do YouTube ver as mensagens)
   kafdrop:
     image: obsidiandynamics/kafdrop
     container_name: security-kafdrop
     ports:
       - "9000:9000"
-    environment:
-      KAFKA_BROKERCONNECT: "kafka:29092"
     depends_on:
       kafka:
         condition: service_healthy
-  # O Cofre: PostgreSQL para os logs de auditoria
-  db-audit:
+    environment:
+      KAFKA_BROKERCONNECT: "kafka:29092" # Porta interna exclusiva para containers
+      JVM_OPTS: "-Xms32M -Xmx64M"
+      SERVER_PORT: 9000
+
+        
+  db:
     image: postgres:15
     container_name: security-db
-    environment:
-      POSTGRES_USER: sentinel
-      POSTGRES_PASSWORD: sentinel_password
-      POSTGRES_DB: security_audit_db
     ports:
       - "5432:5432"
+    environment:
+      POSTGRES_DB: security_audit_db
+      POSTGRES_USER: sentinel
+      POSTGRES_PASSWORD: sentinel_password
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U sentinel -d security_audit_db"]
+      interval: 5s
+      timeout: 5s
+      retries: 5      
+    volumes:
+      - pg_data:/var/lib/postgresql/data
+
+volumes:
+  kafka_data:
+    name: security_kafka_data
+  pg_data:          # <--- Esta linha resolve o erro "undefined volume"
+    name: security_postgres_data
