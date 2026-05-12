@@ -1,31 +1,38 @@
 package br.com.venhaserjava.consumer;
 
-//import org.eclipse.microprofile.reactive.messaging.Incoming;
-import org.eclipse.microprofile.reactive.messaging.Acknowledgment;
+import br.com.venhaserjava.model.SecurityEvent;
+import org.eclipse.microprofile.reactive.messaging.Incoming;
+import org.eclipse.microprofile.reactive.messaging.Message;
 import jakarta.enterprise.context.ApplicationScoped;
-//import io.smallrye.common.annotation.Blocking; // Use este import se disponível, ou o smallrye.reactive
+import java.util.concurrent.CompletionStage;
+//import java.util.concurrent.CompletableFuture;
 
 @ApplicationScoped
 public class SecurityEventConsumer {
 
-    // Removi o @Startup para deixar o CDI gerenciar o ciclo de vida sob demanda do canal
-    public SecurityEventConsumer() {
-        System.out.println("\n>>> [SISTEMA] Consumer instanciado e aguardando canal...\n");
-    }
+    @Incoming("security-audit-in")
+    public CompletionStage<Void> receive(Message<SecurityEvent> msg) {
+        SecurityEvent event = msg.getPayload();
 
-//    @Incoming("security-audit-in-OLD")
-//    @Blocking // Indica que este processamento pode demorar (System.out/DB)
-    @Acknowledgment(Acknowledgment.Strategy.POST_PROCESSING)
-    public void consume(String eventJson) {
-        // Usando System.err para forçar a cor diferente no terminal e facilitar o seu vídeo
-        System.err.println("==============================================");
-        System.err.println(">>> MENSAGEM CAPTURADA PELO CONSUMER! <<<");
-        System.err.println(">>> CONTEÚDO: " + eventJson);
-        System.err.println("==============================================");
+        // ESTE TRECHO ESTÁ COMENTADO POIS ELE SERVE APNEAS PARA TESTAR O COMPORTAMENTO DE FALHA E ENVIO PARA DLQ. DESCOMENTE PARA TESTAR.
+        
+        // if ("CRITICAL_ACCESS".equalsIgnoreCase(event.getType())) {
+        //     System.err.println("\n[ALERTA] Evento crítico detectado! Enviando para DLQ via Nack...");
+            
+        //     // Em vez de 'throw', usamos o 'nack' (Negative Acknowledgement).
+        //     // Isso avisa ao Quarkus: "Não consegui processar, aplique a failure-strategy (DLQ)".
+        //     return msg.nack(new RuntimeException("Falha simulada: Auditoria manual necessária."));
+        // }
 
-        if (eventJson != null && eventJson.contains("\"user\":\"admin\"")) {
-            System.err.println("!!! ALERTA: Usuário ADMIN detectado. Disparando Exception para DLQ !!!");
-            throw new RuntimeException("Falha de segurança simulada: Usuário Admin");
-        }
+        System.out.println("\n==========================================");
+        System.out.println(">>> [SECURITY SENTINEL] EVENTO RECEBIDO <<<");
+        System.out.println("Tipo: " + event.getType());
+        System.out.println("Usuário: " + event.getUser());
+        System.out.println("IP: " + event.getIpAddress());
+        System.out.println("Timestamp: " + event.getTimestamp());
+        System.out.println("Detalhes: " + event.getDetails());
+        System.out.println("==========================================\n");
+
+        return msg.ack();
     }
 }

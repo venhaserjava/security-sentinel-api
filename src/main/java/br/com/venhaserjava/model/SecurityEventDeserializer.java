@@ -1,7 +1,6 @@
-package br.com.venhaserjava.consumer;
+package br.com.venhaserjava.model;
 
 import io.quarkus.kafka.client.serialization.ObjectMapperDeserializer;
-import br.com.venhaserjava.model.SecurityEvent;
 
 public class SecurityEventDeserializer extends ObjectMapperDeserializer<SecurityEvent> {
     public SecurityEventDeserializer() {

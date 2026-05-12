@@ -9,7 +9,8 @@ public class SecurityEvent {
     private String user;
     private String ipAddress;
     private String details;
-    private String timestamp;
+    private String timestamp = LocalDateTime.now().toString();
+    
     
     public SecurityEvent() {}
 
