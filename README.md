@@ -1,66 +1,108 @@
-# security-sentinel-api
 
-This project uses Quarkus, the Supersonic Subatomic Java Framework.
+# 🛡️ Security Sentinel API
 
-If you want to learn more about Quarkus, please visit its website: <https://quarkus.io/>.
+O **Security Sentinel** é um ecossistema de auditoria de segurança de alto desempenho, desenvolvido para demonstrar a implementação de uma arquitetura **Event-Driven** utilizando a stack reativa do Quarkus. 
 
-## Running the application in dev mode
+O projeto foca em resiliência, baixo consumo de recursos e integridade de dados através de processamento assíncrono.
 
-You can run your application in dev mode that enables live coding using:
+---
 
-```shell script
+## 🚀 Diferenciais do Projeto (Senior Level)
+
+* **Reactive Stack Nativa:** Utilização de Mutiny para operações non-blocking I/O da API até o banco de dados.
+* **Resiliência com DLQ:** Estratégia de *Dead Letter Queue* implementada para isolamento de mensagens com falha, garantindo que o pipeline nunca pare.
+* **Persistência Reativa:** Integração entre SmallRye Reactive Messaging e Hibernate Reactive com Panache.
+* **Encapsulamento Rígido:** Domínio modelado respeitando os princípios da O.O. e Clean Code.
+
+---
+
+## 🏗️ Arquitetura do Sistema
+
+O fluxo de dados segue o padrão de processamento assíncrono:
+
+1.  **Producer (REST API):** Recebe eventos e os despacha para o tópico `security-audit-topic`.
+2.  **Broker (Kafka):** Gerencia a retenção e entrega confiável das mensagens.
+3.  **Consumer (Worker):** Consome os eventos e realiza a persistência no **PostgreSQL**.
+4.  **DLQ:** Caso ocorra falha na persistência, a mensagem é movida para o tópico `security-audit-dead-letter`.
+
+
+---
+
+## 🛠️ Tecnologias Utilizadas
+
+![Java](https://img.shields.io/badge/Java-ED8B00?style=for-the-badge&logo=openjdk&logoColor=white)
+![Quarkus](https://img.shields.io/badge/Quarkus-4695EB?style=for-the-badge&logo=quarkus&logoColor=white)
+![Hibernate](https://img.shields.io/badge/Hibernate_Reactive-59666C?style=for-the-badge&logo=hibernate&logoColor=white)
+![Kafka](https://img.shields.io/badge/SmallRye_Kafka-231F20?style=for-the-badge&logo=apachekafka&logoColor=white)
+![Jackson](https://img.shields.io/badge/Jackson_JSON-000000?style=for-the-badge&logo=json&logoColor=white)
+![PostgreSQL](https://img.shields.io/badge/PostgreSQL-316192?style=for-the-badge&logo=postgresql&logoColor=white)
+![Docker](https://img.shields.io/badge/Docker-2496ED?style=for-the-badge&logo=docker&logoColor=white)
+![Linux](https://img.shields.io/badge/Linux-FCC624?style=for-the-badge&logo=linux&logoColor=black)
+
+---
+
+## 🚦 Como Executar o Projeto
+
+### Pré-requisitos
+* Java 21+
+* Docker & Docker Compose
+* Maven 3.9+
+
+### 1. Subir a Infraestrutura
+
+Na raiz do projeto, inicie os containers do Kafka e PostgreSQL:
+```bash
+docker-compose up -d
+
+```
+
+### 2. Rodar a Aplicação (Dev Mode)
+
+O Quarkus gerencia o hot-reload e a conexão com os serviços:
+
+```bash
 ./mvnw quarkus:dev
+
 ```
 
-> **_NOTE:_**  Quarkus now ships with a Dev UI, which is available in dev mode only at <http://localhost:8080/q/dev/>.
+### 3. Testar a API (Swagger UI)
 
-## Packaging and running the application
+Acesse o console interativo para disparar eventos:
+🔗 [http://localhost:8080/q/swagger-ui](https://www.google.com/search?q=http://localhost:8080/q/swagger-ui)
 
-The application can be packaged using:
+---
 
-```shell script
-./mvnw package
+## 📊 Monitoramento e Debug
+
+* **Kafdrop:** Visualize as mensagens nos tópicos (incluindo a DLQ) em: `http://localhost:9000`
+* **Health Checks:** Verifique o status da aplicação e conexões: `http://localhost:8080/q/health`
+
+---
+
+## 📝 Exemplo de Payload (POST)
+
+Para testar o fluxo de sucesso, envie para o endpoint `/audit`:
+
+```json
+{
+  "type": "LOGIN_SUCCESS",
+  "userName": "admin_user",
+  "ipAddress": "192.168.1.10",
+  "details": "Acesso administrativo via terminal reativo"
+}
+
 ```
 
-It produces the `quarkus-run.jar` file in the `target/quarkus-app/` directory.
-Be aware that it’s not an _über-jar_ as the dependencies are copied into the `target/quarkus-app/lib/` directory.
+---
 
-The application is now runnable using `java -jar target/quarkus-app/quarkus-run.jar`.
+# 👨‍💻 Desenvolvido por
 
-If you want to build an _über-jar_, execute the following command:
+**Mário Ramos Rossatti Junior** *Senior Software Developer | Especialista Java & Cloud Native*
 
-```shell script
-./mvnw package -Dquarkus.package.jar.type=uber-jar
+## 🤝 Contato & Redes
+
+[![LinkedIn](https://img.shields.io/badge/LinkedIn-0077B5?style=for-the-badge&logo=linkedin&logoColor=white)](https://www.linkedin.com/in/mario-ramos-rossatti-junior-471aa0246/)
+[![YouTube](https://img.shields.io/badge/YouTube-FF0000?style=for-the-badge&logo=youtube&logoColor=white)](https://www.youtube.com/channel/UCyk8yUhlni-dfDtaISmTBhw)
+[![Email](https://img.shields.io/badge/Email-D14836?style=for-the-badge&logo=gmail&logoColor=white)](mailto:venhaserjava@gmail.com)
+
 ```
-
-The application, packaged as an _über-jar_, is now runnable using `java -jar target/*-runner.jar`.
-
-## Creating a native executable
-
-You can create a native executable using:
-
-```shell script
-./mvnw package -Dnative
-```
-
-Or, if you don't have GraalVM installed, you can run the native executable build in a container using:
-
-```shell script
-./mvnw package -Dnative -Dquarkus.native.container-build=true
-```
-
-You can then execute your native executable with: `./target/security-sentinel-api-1.0.0-SNAPSHOT-runner`
-
-If you want to learn more about building native executables, please consult <https://quarkus.io/guides/maven-tooling>.
-
-## Related Guides
-
-- Reactive PostgreSQL client ([guide](https://quarkus.io/guides/reactive-sql-clients)): Connect to the PostgreSQL database using the reactive pattern
-
-## Provided Code
-
-### RESTEasy JAX-RS
-
-Easily start your RESTful Web Services
-
-[Related guide section...](https://quarkus.io/guides/getting-started#the-jax-rs-resources)
