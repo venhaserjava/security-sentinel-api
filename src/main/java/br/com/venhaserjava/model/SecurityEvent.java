@@ -1,43 +1,43 @@
 package br.com.venhaserjava.model;
 
-
+import io.quarkus.hibernate.reactive.panache.PanacheEntityBase;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.Table;
 import java.time.LocalDateTime;
 
+@Entity
+@Table(name = "security_events")
+public class SecurityEvent extends PanacheEntityBase {
 
-public class SecurityEvent {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
     private String type;
-    private String user;
+    private String userName;
     private String ipAddress;
     private String details;
-    private String timestamp = LocalDateTime.now().toString();
-    
-    
-    public SecurityEvent() {}
+    private LocalDateTime timestamp = LocalDateTime.now();
 
-    public SecurityEvent(String type, String user, String ipAddress, String details) {
-        this.type = type;
-        this.user = user;
-        this.ipAddress = ipAddress;
-        this.details = details;
-        this.timestamp = LocalDateTime.now().toString();
-        System.out.println("\n>>> [SISTEMA] SecurityEvent instanciado...\n");
-    }
-
-    
     // Getters e Setters
-    public String getUser() { return user; }
-    public void setUser(String user) { this.user = user; }
-    
+    public Long getId() { return id; }
+    public void setId(Long id) { this.id = id; }
+
     public String getType() { return type; }
     public void setType(String type) { this.type = type; }
+
+    public String getUserName() { return userName; }
+    public void setUserName(String userName) { this.userName = userName; }
 
     public String getIpAddress() { return ipAddress; }
     public void setIpAddress(String ipAddress) { this.ipAddress = ipAddress; }
 
-    public String getDetails() { return details;     }
-    public void setDetails(String details) { this.details = details;    }
+    public String getDetails() { return details; }
+    public void setDetails(String details) { this.details = details; }
 
-    public String getTimestamp() { return timestamp; }
-    public void setTimestamp(String timestamp) { this.timestamp = timestamp; }
-
+    public LocalDateTime getTimestamp() { return timestamp; }
+    public void setTimestamp(LocalDateTime timestamp) { this.timestamp = timestamp; }
 }

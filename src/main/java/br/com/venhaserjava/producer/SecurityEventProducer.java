@@ -11,22 +11,14 @@ public class SecurityEventProducer {
 
     @Inject
     @Channel("security-audit-out")
-    // CORREÇÃO: Mudamos de String para o objeto real SecurityEvent.
-    // O Quarkus usará o SecurityEventSerializer automaticamente.
     Emitter<SecurityEvent> eventEmitter; 
 
     public void sendEvent(SecurityEvent event) {
-        
         try {
-            // Removido o ObjectMapper e a conversão manual para String.
-            // O log agora mostra o objeto sendo enviado para o pipeline do Quarkus.
+            // Acesso direto ao campo público 'type' definido na Entity
             System.out.println(">>> PRODUCER -> Enviando SecurityEvent para o canal: " + event.getType());
-            
             eventEmitter.send(event);
-            
         } catch (Exception e) {
-            // Como agora o Quarkus cuida da serialização, erros aqui serão raros,
-            // mas mantemos o log para segurança da operação.
             System.err.println("Erro ao disparar evento para o Kafka: " + e.getMessage());
             throw new RuntimeException("Erro no envio do evento", e);
         }
